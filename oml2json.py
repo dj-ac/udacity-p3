@@ -8,6 +8,7 @@ import re
 import codecs
 import traceback
 import json
+import warnings
 
 lower = re.compile(r'^([a-z]|_)*$')
 lower_colon = re.compile(r'^([a-z]|_)*:([a-z]|_)*$')
@@ -71,7 +72,10 @@ def shape_element(element):
                     else:
                         if tagKeyPre not in node:
                             node[tagKeyPre] = {}
-                        node[tagKeyPre][tagKeyVal] = tagVal
+                        elif type(node[tagKeyPre]) == dict:
+                            node[tagKeyPre][tagKeyVal] = tagVal
+                        else:
+                            warnings.warn("ELEMENT: '{0}', ID: '{1}' - ignoring tag '{2}' due to conflict with existing '{3}' key".format(element.tag, element.get('id'), tagKey, tagKeyPre))
             elif n.tag == "nd" and element.tag == "way":
                 if 'node_refs' not in node:
                     node['node_refs'] = []
