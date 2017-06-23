@@ -40,10 +40,14 @@ with open(get_out_filename(args.osm, args.k), 'wb') as output:
     output.write('<osm>\n  ')
 
     # Write every kth top level element
+    status_msg = None
     for i, element in enumerate(get_element(args.osm)):
         if i % args.k == 0:
             output.write(ET.tostring(element, encoding='utf-8'))
-            sys.stdout.write("Records added to sample: %d ( out of %d scanned )  \r" % ((i/args.k), i))
+            status_msg = "Records added to sample: %d ( out of %d scanned )" % ((i/args.k), i)
+            sys.stdout.write(status_msg + '\r')
             sys.stdout.flush()
+    
+    sys.stdout.write(status_msg)
 
     output.write('</osm>')
