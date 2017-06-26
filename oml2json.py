@@ -2,53 +2,46 @@
 # -*- coding: utf-8 -*-
 import xml.etree.cElementTree as ET
 import argparse
-import re
 import codecs
 import traceback
 import json
 import sys
-import warnings
 
-class ScriptConst:
-    lower_re = re.compile(r'^([a-z]|_)*$')
-    lower_colon_re = re.compile(r'^([a-z]|_)*:([a-z]|_)*$')
-    problemchars_re = re.compile(r'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
+CREATED = ["version", "changeset", "timestamp", "user", "uid"]
 
-CREATED = [ "version", "changeset", "timestamp", "user", "uid"]
-
-"""
-    - all attributes of "node" and "way" should be turned into regular key/value pairs, except:
+def shape_element(element):
+    """Processes XML element and returns JSON representation of the data
+        - all attributes of "node" and "way" should be turned into regular key/value pairs, except:
         - attributes in the CREATED array should be added under a key "created"
         - attributes for latitude and longitude should be added to a "pos" array,
             for use in geospacial indexing. Make sure the values inside "pos" array are floats
-            and not strings. 
+            and not strings.
 
-- for "way" specifically: "node_refs": ["305896090", "1719825889"]
-"""
+    - for "way" specifically: "node_refs": ["305896090", "1719825889", ...]
+    """
+    node = {"created" : {}}
 
-def shape_element(element):
-    node = { "created" : {} }
-
-    if element.tag == "node" or element.tag == "way" :
+    if element.tag == "node" or element.tag == "way":
         node['type'] = element.tag
         # Processing attributes
         if element.tag == "node":
-            node['pos'] = [ float(element.get('lat')), float(element.get('lon')) ]
-        
+            node['pos'] = [float(element.get('lat')), float(element.get('lon'))]
+
         for k in element.keys():
             if k in CREATED:
                 node['created'][k] = element.get(k)
-            elif k not in [ 'lat', 'lon' ]:
+            elif k not in ['lat', 'lon']: #avoid adding latitude, longitude since they are processed separately
                 node[k] = element.get(k)
-        
+
         contentNodes = element.getchildren()
         for n in contentNodes:
             if n.tag == "tag":
-                process_tag(element, node)
+                process_tag(n, node)
             elif n.tag == "nd" and element.tag == "way":
-                if 'node_refs' not in node:
-                    node['node_refs'] = []
+                if 'node_refs' not in node: node['node_refs'] = []
                 node['node_refs'].append(n.get("ref"))
+            else:
+                print "Unknown tag '%s' ( element id: %s)" % (n.tag, element.get('id'))
 
         return node
     else:
@@ -63,9 +56,6 @@ def process_tag(tag_element, out_json_node):
     """
     tag_key = tag_element.get('k')
     tag_val = tag_element.get('v')
-
-    if ScriptConst.problemchars_re.match(tag_key):
-        return
 
     addr_marker = 'addr:'
     if tag_key.startswith(addr_marker):
