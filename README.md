@@ -5,3 +5,7 @@
 ## Completeness - all the records are present in the dataset
 ## Consistency - the data is uniformely stored in different systems
 ## Uniformity - same units of measurement are used for the same data "metrics"
+
+## The users who have contributed to the map area
+### Timeline ?
+## Street names ( consistency )
