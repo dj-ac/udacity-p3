@@ -11,3 +11,7 @@
 ## The users who have contributed to the map area
 ### Timeline ?
 ## Street names ( consistency )
+ - Plz ( overabbrebiated )
+ - No postcode
+ - Different cities ( 'Redwood City', 'Palo Alto', 'San Mateo', 'Menlo Park' )
+ - Different counties ( 'San Mateo', 'Santa Clara' )
