@@ -12,6 +12,13 @@
 ### Timeline ?
 ## Street names ( consistency )
  - Plz ( overabbrebiated )
+ - No street type ( 'El Camino Real', 'Broadway', 'Woodside Plz', 'Alameda', 'Oakridge' )
  - No postcode
+
+ ## Expected?
  - Different cities ( 'Redwood City', 'Palo Alto', 'San Mateo', 'Menlo Park' )
  - Different counties ( 'San Mateo', 'Santa Clara' )
+ 
+ ##Investigate other high level tags available
+
+ af
