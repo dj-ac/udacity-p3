@@ -8,17 +8,24 @@
 
 ## Thoroughly audit and clean your dataset, converting it from XML to JSON format. Then import the cleaned .json file into a MongoDB database.
 
+## Add python module for commonly used functions
+
 ## The users who have contributed to the map area
 ### Timeline ?
 ## Street names ( consistency )
  - Plz ( overabbrebiated )
  - No street type ( 'El Camino Real', 'Broadway', 'Woodside Plz', 'Alameda', 'Oakridge' )
- - No postcode
+ - No postcodes
 
  ## Expected?
  - Different cities ( 'Redwood City', 'Palo Alto', 'San Mateo', 'Menlo Park' )
  - Different counties ( 'San Mateo', 'Santa Clara' )
  
- ##Investigate other high level tags available
+## "Barebones" data
 
- af
+## "Enriching" data ( during conversion )
+### Loading geojson data to Mongo, adding indexes
+### Adding scripts to "enrich" the data
+
+
+ 
