@@ -3,18 +3,12 @@ Script to import geojson data ( from https://mapzen.com/data/metro-extracts/ )
 into a Mongo database collection
 
 TODO:
-    Params
-        Connectionstring
-        targetDb
-        targetCollection
-
-    Get timestamp // datetime.datetime.now().isoformat()
-    Rename target collection if exists // print("posts" in db.collection_names())
-    Logging // logging.basicConfig(level=logging.INFO)
+    Add mongo index for properties.osm_id
 """
 import json
-import argparse
 import logging
+import argparse
+import datetime
 from pymongo import MongoClient
 
 def parse_cmdline():
@@ -38,10 +32,9 @@ def parse_cmdline():
 def main():
     """Main routine"""
     args = parse_cmdline()
-    #m_client = MongoClient(args['cst'])
 
     input_filename = args.inF
-    logging.info("Loading input JSON file '%s'", input_filename)
+    logging.info("Loading input JSON file '%s' ...", input_filename)
     try:
         with open(input_filename) as geojson_file:
             json_data = json.load(geojson_file)
@@ -50,6 +43,30 @@ def main():
         raise
     logging.info("Done")
     logging.debug(json_data.keys())
+
+    logging.info("Creating MongoClient from connection string ...")
+    m_client = MongoClient(args.cst)
+    logging.info("Done")
+
+    target_db_name = args.tdb
+    target_db = m_client[target_db_name]
+    target_coll_name = args.tc
+    logging.info("Checking if '%s' collection already exists in the '%s' database ...",
+                 target_coll_name, target_db_name)
+    if target_coll_name in target_db.collection_names():
+        backup_collection_name = target_coll_name + datetime.datetime.now().isoformat()
+        logging.warn(" > '%s' collection already exists, renaming to '%s'",
+                     target_coll_name, backup_collection_name)
+        target_db[target_coll_name].rename(backup_collection_name)
+        logging.warn(" > Done")
+    logging.info("Done")
+    logging.info("Bulk importing %d records...", len(json_data['features']))
+    target_db[target_coll_name].insert_many(json_data['features'])
+    logging.info("Done")
+    property_to_index = 'properties.osm_id'
+    logging.info("Creating index on the '%s' property ...", property_to_index)
+    target_db[target_coll_name].create_index(property_to_index)
+    logging.info("Done")
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
