@@ -1,9 +1,6 @@
 """
 Script to import geojson data ( from https://mapzen.com/data/metro-extracts/ )
 into a Mongo database collection
-
-TODO:
-    Add mongo index for properties.osm_id
 """
 import json
 import logging
