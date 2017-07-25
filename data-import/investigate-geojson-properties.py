@@ -2,7 +2,7 @@
 Script to import geojson data ( from https://mapzen.com/data/metro-extracts/ )
 into a Mongo database collection
 
-TODO: calculate collection stats
+TODO: define mapping of properties
 """
 import json
 import logging
@@ -22,8 +22,25 @@ def parse_cmdline():
                         metavar='<TARGET-DATABASE>', dest='db')
     return parser.parse_args()
 
-def produce_collection_stats():
-    pass
+def produce_collection_stats(m_db, m_coll):
+    """Produces basic stats on available geojson properties to console"""
+    doc_total = 0
+    doc_with_prop = 0
+    prop_summary = {}
+    for doc in m_db[m_coll].find():
+        doc_total += 1
+        if doc['properties'] != None:
+            doc_with_prop += 1
+            for key in doc['properties']:
+                if key not in prop_summary:
+                    prop_summary[key] = 0
+                else:
+                    prop_summary[key] += 1
+    print "%d documents total" % doc_total
+    print "%d documents with 'properties' section" % doc_with_prop
+    print "properties list:"
+    print prop_summary
+
 
 def main():
     """Main routine"""
@@ -38,6 +55,7 @@ def main():
     logging.info("Scanning collections and collecting statistics")
     for collection in target_db.collection_names():
         logging.info(" > scanning collection '%s' ...", collection)
+        produce_collection_stats(target_db, collection)
         logging.info(" > done")
     logging.info("Done")
 

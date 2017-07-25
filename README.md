@@ -26,7 +26,8 @@
 ## "Enriching" data ( during conversion )
 ### Loading geojson data to Mongo, adding indexes
 ### Adding scripts to "enrich" the data
-#### Investigate 
+#### Investigate available properties
+#### Create property "mapping"
 
 
  
