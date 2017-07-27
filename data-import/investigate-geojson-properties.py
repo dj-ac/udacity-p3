@@ -33,33 +33,30 @@ def produce_collection_stats(m_db, m_coll):
             doc_with_prop += 1
             for key in doc['properties']:
                 if key not in prop_summary:
-                    prop_summary[key] = 0
+                    prop_summary[key] = 1
                 else:
                     prop_summary[key] += 1
-    print "%d documents total" % doc_total
-    print "%d documents with 'properties' section" % doc_with_prop
-    print "properties list:"
+    print "'%s' : %d documents total ( %d with 'properties' section)" % (m_coll, doc_total, doc_with_prop)
     print prop_summary
-
 
 def main():
     """Main routine"""
     args = parse_cmdline()
-    logging.info("Creating MongoClient from connection string ...")
+    logging.debug("Creating MongoClient from connection string ...")
     m_client = MongoClient(args.cst)
-    logging.info("Done")
-    logging.info("Retrieving database ...")
+    logging.debug("Done")
+    logging.debug("Retrieving database ...")
     target_db_name = args.db
     target_db = m_client[target_db_name]
-    logging.info("Done")
-    logging.info("Scanning collections and collecting statistics")
+    logging.debug("Done")
+    logging.debug("Scanning collections and collecting statistics")
     for collection in target_db.collection_names():
-        logging.info(" > scanning collection '%s' ...", collection)
+        logging.debug(" > scanning collection '%s' ...", collection)
         produce_collection_stats(target_db, collection)
-        logging.info(" > done")
-    logging.info("Done")
+        logging.debug(" > done")
+    logging.debug("Done")
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.WARN)
     main()
 
