@@ -1,8 +1,6 @@
 """
 Script to import geojson data ( from https://mapzen.com/data/metro-extracts/ )
 into a Mongo database collection
-
-TODO: define mapping of properties
 """
 import json
 import logging
