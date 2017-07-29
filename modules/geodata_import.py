@@ -117,28 +117,6 @@ mapping = {
         'addr:city'  : ['address', 'city'],
         'abc' : None }
 }
-'aeroways.geojson' : 92 documents total ( 92 with 'properties' section)
-{u'type': 92, u'id': 92, u'name': 92, u'osm_id': 92}
-'waterareas.geojson' : 338 documents total ( 338 with 'properties' section)
-{u'area': 338, u'type': 338, u'id': 338, u'name': 338, u'osm_id': 338}
-'amenities.geojson' : 95 documents total ( 95 with 'properties' section)
-{u'type': 95, u'id': 95, u'name': 95, u'osm_id': 95}
-'transport_areas.geojson' : 5 documents total ( 5 with 'properties' section)
-{u'type': 5, u'id': 5, u'name': 5, u'osm_id': 5}
-'barrierways.geojson' : 180 documents total ( 180 with 'properties' section)
-{u'type': 180, u'id': 180, u'name': 180, u'osm_id': 180}
-'housenumbers_interpolated.geojson' : 5 documents total ( 5 with 'properties' section)
-{u'addr:postc': 5, u'name': 5, u'addr:inclu': 5, u'addr:stree': 5, u'osm_id': 5, u'type': 5, u'id': 5, u'addr:city': 5}
-'buildings.geojson' : 95748 documents total ( 95748 with 'properties' section)
-{u'type': 95748, u'id': 95748, u'name': 95748, u'osm_id': 95748}
-'roads.geojson' : 16808 documents total ( 16808 with 'properties' section)
-{u'z_order': 16808, u'bridge': 16808, u'name': 16808, u'service': 16808, u'tunnel': 16808, u'ref': 16808, u'oneway': 16808, u'class': 16808, u'access': 16808, u'osm_id': 16808, u'type': 16808, u'id': 16808}
-'places.geojson' : 23 documents total ( 23 with 'properties' section)
-{u'z_order': 23, u'name': 23, u'osm_id': 23, u'type': 23, u'id': 23, u'population': 23}
-'transport_points.geojson' : 1011 documents total ( 1011 with 'properties' section)
-{u'ref': 1011, u'type': 1011, u'id': 1011, u'name': 1011, u'osm_id': 1011}
-'roads_gen0.geojson' : 3486 documents total ( 3486 with 'properties' section)
-{u'z_order': 3486, u'bridge': 3486, u'name': 3486, u'service': 3486, u'tunnel': 3486, u'ref': 3486, u'osm_id': 3486, u'access': 3486, u'oneway': 3486, u'type': 3486, u'class': 3486}
 """
 def enrich_node(oml_json_node, mongo_db):
     """Adds geojson data into an OML data node converted to JSON"""
@@ -177,20 +155,85 @@ def enrich_node(oml_json_node, mongo_db):
                                     'osm_id' : None,
                                     'id': None
                                 })
-    #'waterways.geojson' : 343 documents total ( 343 with 'properties' section)
-    #{u'type': 343, u'id': 343, u'name': 343, u'osm_id': 343}
-    enrich_node_from_collection(oml_json_node, mongo_db, 'admin.geojson',
-                                {
-                                    'osm_id' : None,
-                                    'id': None
-                                })
     #'roads_gen1.geojson' : 3486 documents total ( 3486 with 'properties' section)
     #{u'z_order': 3486, u'bridge': 3486, u'name': 3486, u'service': 3486, u'tunnel': 3486, u'ref': 3486, u'osm_id': 3486, u'access': 3486, u'oneway': 3486, u'type': 3486, u'class': 3486}
-    enrich_node_from_collection(oml_json_node, mongo_db, 'admin.geojson',
+    enrich_node_from_collection(oml_json_node, mongo_db, 'roads_gen1.geojson',
                                 {
                                     'z_order': None,
                                     'osm_id' : None,
                                     'ref' : None,
+                                    'id': None
+                                })
+    #'amenities.geojson' : 95 documents total ( 95 with 'properties' section)
+    #{u'type': 95, u'id': 95, u'name': 95, u'osm_id': 95}
+    enrich_node_from_collection(oml_json_node, mongo_db, 'amenities.geojson',
+                                {
+                                    'osm_id' : None,
+                                    'id': None
+                                })
+    #'transport_areas.geojson' : 5 documents total ( 5 with 'properties' section)
+    #{u'type': 5, u'id': 5, u'name': 5, u'osm_id': 5}
+    enrich_node_from_collection(oml_json_node, mongo_db, 'transport_areas.geojson',
+                                {
+                                    'osm_id' : None,
+                                    'id': None
+                                })
+    #'barrierways.geojson' : 180 documents total ( 180 with 'properties' section)
+    #{u'type': 180, u'id': 180, u'name': 180, u'osm_id': 180}
+    enrich_node_from_collection(oml_json_node, mongo_db, 'barrierways.geojson',
+                                {
+                                    'osm_id' : None,
+                                    'id': None
+                                })
+    #'housenumbers_interpolated.geojson' : 5 documents total ( 5 with 'properties' section)
+    #{u'addr:postc': 5, u'name': 5, u'addr:inclu': 5, u'addr:stree': 5, u'osm_id': 5, u'type': 5, u'id': 5, u'addr:city': 5}
+    enrich_node_from_collection(oml_json_node, mongo_db, 'housenumbers_interpolated.geojson',
+                                {
+                                    'addr:postc' : ['address', 'postcode'],
+                                    'addr:stree' : ['address', 'street'],
+                                    'addr:city'  : ['address', 'city'],
+                                    'osm_id' : None,
+                                    'id': None
+                                })
+    #'buildings.geojson' : 95748 documents total ( 95748 with 'properties' section)
+    #{u'type': 95748, u'id': 95748, u'name': 95748, u'osm_id': 95748}
+    enrich_node_from_collection(oml_json_node, mongo_db, 'buildings.geojson',
+                                {
+                                    'osm_id' : None,
+                                    'id': None
+                                })
+    #'roads.geojson' : 16808 documents total ( 16808 with 'properties' section)
+    #{u'z_order': 16808, u'bridge': 16808, u'name': 16808, u'service': 16808, u'tunnel': 16808, u'ref': 16808, u'oneway': 16808, u'class': 16808, u'access': 16808, u'osm_id': 16808, u'type': 16808, u'id': 16808}
+    enrich_node_from_collection(oml_json_node, mongo_db, 'roads.geojson',
+                                {
+                                    'z_order': None,
+                                    'osm_id' : None,
+                                    'ref' : None,
+                                    'id': None
+                                })
+    #'places.geojson' : 23 documents total ( 23 with 'properties' section)
+    #{u'z_order': 23, u'name': 23, u'osm_id': 23, u'type': 23, u'id': 23, u'population': 23}
+    enrich_node_from_collection(oml_json_node, mongo_db, 'places.geojson',
+                                {
+                                    'z_order': None,
+                                    'osm_id' : None,
+                                    'id': None
+                                })
+    #'transport_points.geojson' : 1011 documents total ( 1011 with 'properties' section)
+    #{u'ref': 1011, u'type': 1011, u'id': 1011, u'name': 1011, u'osm_id': 1011}
+    enrich_node_from_collection(oml_json_node, mongo_db, 'transport_points.geojson',
+                                {
+                                    'ref' : None,
+                                    'osm_id' : None,
+                                    'id': None
+                                })
+    #'roads_gen0.geojson' : 3486 documents total ( 3486 with 'properties' section)
+    #{u'z_order': 3486, u'bridge': 3486, u'name': 3486, u'service': 3486, u'tunnel': 3486, u'ref': 3486, u'osm_id': 3486, u'access': 3486, u'oneway': 3486, u'type': 3486, u'class': 3486}
+    enrich_node_from_collection(oml_json_node, mongo_db, 'roads_gen0.geojson',
+                                {
+                                    'ref': None,
+                                    'z_order' : None,
+                                    'osm_id' : None,
                                     'id': None
                                 })
     logging.debug('Processed node ''%s''', oml_id)
