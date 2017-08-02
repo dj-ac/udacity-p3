@@ -4,8 +4,19 @@ import xml.etree.cElementTree as ET
 import argparse
 import codecs
 import traceback
+import inspect
 import json
 import sys
+import os
+
+# Bit of trickery to import custom modules by relative path
+# https://stackoverflow.com/questions/279237/import-a-module-from-a-relative-path
+cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
+if cmd_folder not in sys.path:
+    sys.path.insert(0, cmd_folder)
+# Now the import
+from modules import geodata_import
+from pymongo import MongoClient
 
 CREATED = ["version", "changeset", "timestamp", "user", "uid"]
 
@@ -69,7 +80,7 @@ def process_tag(tag_element, out_json_node):
         out_json_node['tags'][tag_key] = tag_val
 
 
-def process_map(file_in, pretty = False):
+def process_map(file_in, mongo_db, pretty = False):
     elements_processed = 0
     elements_failed = 0
 
@@ -81,6 +92,8 @@ def process_map(file_in, pretty = False):
                 el = shape_element(element)
                 elements_processed += 1
                 if el:
+                    #Attempt to load data from geojson
+                    geodata_import.enrich_node(el, mongo_db)
                     data.append(el)
                     if pretty:
                         fo.write(json.dumps(el, indent=2)+"\n")
@@ -101,6 +114,12 @@ def parse_cmdline():
     parser.add_argument('--osm', required=True, action='store',
                         help='Path to the OSM file to be processed',
                         metavar='<OSM-FILE>', dest='osm')
+    parser.add_argument('--mconn', required=True, action='store',
+                        help='Mongo connection string for geojson data',
+                        metavar='<MONGO-CONNECTION-STRING>', dest='mconn')
+    parser.add_argument('--mdb', required=True, action='store',
+                        help='Mongo database hosting geojson data',
+                        metavar='<MONGO-DATABASE>', dest='mdb')
     return parser.parse_args()
 
 def stdout_map_processing_status(elements_processed, elements_failed, refresh=True):
@@ -112,4 +131,4 @@ def stdout_map_processing_status(elements_processed, elements_failed, refresh=Tr
 
 if __name__ == "__main__":
     args = parse_cmdline()
-    data = process_map(args.osm)
+    data = process_map(args.osm, MongoClient(args.mconn)[args.mdb])
