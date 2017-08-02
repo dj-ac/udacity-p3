@@ -4,7 +4,6 @@ TODO: define mapping of properties
 """
 import logging
 
-
 """
 {
     "tags": {
@@ -87,6 +86,7 @@ def enrich_node_from_collection(oml_json_node, m_db, m_coll_name, mappings):
     gj_prop = gj_data['properties']
     #Processing mappings
     for m_key in mappings:
+        processed_prp_list.append(m_key)
         if m_key not in gj_prop:
             logging.debug('The ''%s'' key present in mappings but not found in gj data. GJ id: ''%s''',
                           m_key, gj_data['_id'])
@@ -101,7 +101,6 @@ def enrich_node_from_collection(oml_json_node, m_db, m_coll_name, mappings):
     #Importing the rest of the properties to tags
     for p_key in gj_prop:
         if p_key not in processed_prp_list:
-            logging.debug('Importing ''%s'' property to tags', p_key)
             oml_tags = oml_json_node['tags']
             if p_key in oml_tags:
                 logging.debug('Overriding ''%s'' tags node. OLD: ''%s'', NEW: ''%s''',
