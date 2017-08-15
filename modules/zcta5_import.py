@@ -14,5 +14,5 @@ def load_polygondata(polygon_str):
         coord_str = polygon_match.groups()[0]
 
         # parse string of coordinates into a list of float pairs
-        return [[float(s) for s in p.split()] for p in coord_str.split(";")]
+        return [[float(s) for s in p.split(',')] for p in coord_str.split(";")]
     return None
