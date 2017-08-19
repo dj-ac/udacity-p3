@@ -3,6 +3,7 @@ The module allows to load Polygon data from CSV file generated with
 https://github.com/censusreporter/census-shapefile-utils
 """
 import re
+import csv
 import logging
 import numpy as np
 import matplotlib.path as mplPath
@@ -28,4 +29,22 @@ def coord_within_ziparea(latlong, poly_array):
 def load_zcta5_data(zcta_csv_file):
     """Loads zcta5 data into a dictionary ZIP=>POLYGON from CSV data file extracted with
     https://github.com/censusreporter/census-shapefile-utils"""
-    pass
+    input_file = csv.DictReader(open(zcta_csv_file))
+    zcta_data = {}
+    processed_counter = 0
+    for row in input_file:
+        z_key = row['GEOID']
+        z_poly_str = row['GEOMETRY']
+        if z_key not in zcta_data:
+            try:
+                z_poly = load_polygon(z_poly_str)
+                if z_poly is not None:
+                    zcta_data[z_key] = z_poly
+                else:
+                    logging.error('Failed to parse polygon. GEOID: ''%s''', z_key)
+            except Exception as e:
+                logging.error('Failed to process polygon. GEOID: ''%s''', z_key)
+                logging.exception(e)
+        processed_counter += 1
+        logging.debug('Processed %d items', processed_counter)
+    return zcta_data
