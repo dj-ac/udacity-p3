@@ -2,11 +2,15 @@
 The module allows to load Polygon data from CSV file generated with
 https://github.com/censusreporter/census-shapefile-utils
 """
+import sys
 import csv
 import logging
-import numpy as np
 from shapely.wkt import loads
 from shapely.geometry import Point
+
+# Having issues reading large data records
+# https://stackoverflow.com/questions/15063936/csv-error-field-larger-than-field-limit-131072
+csv.field_size_limit(sys.maxsize)
 
 def try_load_polygon(polygon_str):
     """Loads polygon data from string POLYGON((lon lat, lon lat, ...))
