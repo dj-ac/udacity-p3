@@ -20,7 +20,7 @@ def try_load_polygon(polygon_str):
 def coord_within_ziparea(latlong, shapely_zcta_poly):
     """Determines if a point is withing the polygon for a zip code area
     https://stackoverflow.com/questions/16625507/python-checking-if-point-is-inside-a-polygon"""
-    return Point(latlong).within(shapely_zcta_poly)
+    return Point(latlong).intersects(shapely_zcta_poly)
 
 def load_zcta5_data(zcta_csv_file):
     """Loads zcta5 data into a dictionary ZIP=>POLYGON from CSV data file extracted with
