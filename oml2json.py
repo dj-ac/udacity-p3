@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import xml.etree.cElementTree as ET
 import argparse
+import logging
 import codecs
 import traceback
 import inspect
@@ -16,6 +17,7 @@ if cmd_folder not in sys.path:
     sys.path.insert(0, cmd_folder)
 # Now the import
 from modules import geodata_import
+from modules import zcta5_import
 from pymongo import MongoClient
 
 CREATED = ["version", "changeset", "timestamp", "user", "uid"]
@@ -80,12 +82,22 @@ def process_tag(tag_element, out_json_node):
         out_json_node['tags'][tag_key] = tag_val
 
 
-def process_map(file_in, mongo_db, pretty = False):
+def process_map(file_in, mongo_db, zcta_file, pretty = False):
     elements_processed = 0
     elements_failed = 0
 
     file_out = "{0}.json".format(file_in)
     data = []
+
+    logging.info("loading zcta data ...")
+    zcta_data = zcta5_import.load_zcta5_data(zcta_file)
+    logging.info("done")
+
+    #zcta minimized cache
+    #  Used to store previously "matched" ZIP areas ( as it is most likely that 
+    #  addresses being resolved are within same of a few areas )
+    zcta_cache = {}
+
     with codecs.open(file_out, "w") as fo:
         for _, element in ET.iterparse(file_in):
             try:
@@ -95,6 +107,17 @@ def process_map(file_in, mongo_db, pretty = False):
                     #Attempt to load data from geojson
                     geodata_import.enrich_node(el, mongo_db)
                     data.append(el)
+
+                    #Attempt to resolve ZIP code by location
+                    if el['pos'] is not None:
+                        zip_code = resolve_zip_area_code(el, zcta_data, zcta_cache)
+                        if zip_code is not None:
+                            el['address']['postcode'] = zip_code
+                            if zip_code not in zcta_cache:
+                                zcta_cache[zip_code] = zcta_data[zip_code]
+                        else:
+                            logging.warn('Failed to resolve zcta for (%d, %d)', el['pos'][0], el['pos'][1])                            
+
                     if pretty:
                         fo.write(json.dumps(el, indent=2)+"\n")
                     else:
@@ -109,6 +132,29 @@ def process_map(file_in, mongo_db, pretty = False):
     stdout_map_processing_status(elements_processed, elements_failed, refresh=False)
     return data
 
+def resolve_zip_area_code(element, zcta_data, zcta_cache):
+    """Resolves ZIP area code for element coordinates"""
+    pos = element['pos']
+    old_zip = element['address']['postcode']
+    new_zip = None
+
+    for z_cache_key in zcta_cache.keys():
+        if zcta5_import.coord_within_ziparea((pos[0], pos[1]), zcta_cache[z_cache_key]):
+            new_zip = z_cache_key
+            break
+    
+    if new_zip is None:
+        for z_key in zcta_data.keys():
+            if zcta5_import.coord_within_ziparea((pos[0], pos[1]), zcta_data[z_key]):
+                new_zip = z_key
+                break
+    
+    if new_zip is not None:
+        if new_zip != old_zip:
+            logging.warn('Resolved different ZIP for the location %s (OLD: "%s", NEW: "%s")', el['id'], old_zip, new_zip)
+    
+    return new_zip
+
 def parse_cmdline():
     parser = argparse.ArgumentParser(description='Converts OSM openstreet data to JSON')
     parser.add_argument('--osm', required=True, action='store',
@@ -120,6 +166,9 @@ def parse_cmdline():
     parser.add_argument('--mdb', required=True, action='store',
                         help='Mongo database hosting geojson data',
                         metavar='<MONGO-DATABASE>', dest='mdb')
+    parser.add_argument('--zcta', required=True, action='store',
+                        help='File containing ZCTA geospatial information',
+                        metavar='<MONGO-DATABASE>', dest='zcta')
     return parser.parse_args()
 
 def stdout_map_processing_status(elements_processed, elements_failed, refresh=True):
@@ -131,4 +180,4 @@ def stdout_map_processing_status(elements_processed, elements_failed, refresh=Tr
 
 if __name__ == "__main__":
     args = parse_cmdline()
-    data = process_map(args.osm, MongoClient(args.mconn)[args.mdb])
+    data = process_map(args.osm, MongoClient(args.mconn)[args.mdb], args.zcta)
