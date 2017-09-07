@@ -38,7 +38,7 @@ def shape_element(element):
         node['type'] = element.tag
         # Processing attributes
         if element.tag == "node":
-            node['pos'] = [float(element.get('lat')), float(element.get('lon'))]
+            node['pos'] = [float(element.get('lon')), float(element.get('lat'))]
 
         for k in element.keys():
             if k in CREATED:
@@ -109,7 +109,7 @@ def process_map(file_in, mongo_db, zcta_file, pretty = False):
                     data.append(el)
 
                     #Attempt to resolve ZIP code by location
-                    if el['pos'] is not None:
+                    if 'pos' in el:
                         zip_code = resolve_zip_area_code(el, zcta_data, zcta_cache)
                         if zip_code is not None:
                             el['address']['postcode'] = zip_code
@@ -135,23 +135,30 @@ def process_map(file_in, mongo_db, zcta_file, pretty = False):
 def resolve_zip_area_code(element, zcta_data, zcta_cache):
     """Resolves ZIP area code for element coordinates"""
     pos = element['pos']
-    old_zip = element['address']['postcode']
+    old_zip = None
+    if 'address' in element:
+        if 'postcode' in element['address']:
+            old_zip = element['address']['postcode']
     new_zip = None
 
     for z_cache_key in zcta_cache.keys():
-        if zcta5_import.coord_within_ziparea((pos[0], pos[1]), zcta_cache[z_cache_key]):
+        #As per my investigation shapely point expects lon / lat order of geocoord
+        if zcta5_import.coord_within_ziparea((pos[1], pos[0]), zcta_cache[z_cache_key]):
             new_zip = z_cache_key
+            logging.debug("Resolved ZIP area %s from cache", new_zip)
             break
     
     if new_zip is None:
         for z_key in zcta_data.keys():
-            if zcta5_import.coord_within_ziparea((pos[0], pos[1]), zcta_data[z_key]):
+            #As per my investigation shapely point expects lon / lat order of geocoord
+            if zcta5_import.coord_within_ziparea((pos[1], pos[0]), zcta_data[z_key]):
                 new_zip = z_key
+                logging.debug("Resolved ZIP area %s from ZCTA dataset", new_zip)
                 break
     
     if new_zip is not None:
         if new_zip != old_zip:
-            logging.warn('Resolved different ZIP for the location %s (OLD: "%s", NEW: "%s")', el['id'], old_zip, new_zip)
+            logging.warn('Resolved different ZIP for the location %s (OLD: "%s", NEW: "%s")', element['id'], old_zip, new_zip)
     
     return new_zip
 
@@ -179,5 +186,6 @@ def stdout_map_processing_status(elements_processed, elements_failed, refresh=Tr
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     args = parse_cmdline()
     data = process_map(args.osm, MongoClient(args.mconn)[args.mdb], args.zcta)
